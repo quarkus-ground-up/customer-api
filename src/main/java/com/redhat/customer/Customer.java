@@ -10,17 +10,17 @@ public class Customer {
     
     private Integer customerId;
     
-    @NotEmpty
+    @NotEmpty(message = "{Customer.firstName.required}")
     private String firstName;
     
     private String middleName;
-    
-    @NotEmpty
+
+    @NotEmpty(message = "{Customer.lastName.required}")
     private String lastName;
     
     private String suffix;
-    
-    @Email
+
+    @Email(message = "{Customer.email.invalid}")
     private String email;
     
     private String phone;

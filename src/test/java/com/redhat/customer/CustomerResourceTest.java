@@ -1,10 +1,13 @@
 package com.redhat.customer;
 
+import com.redhat.exception.ErrorResponse;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+
+import java.util.ResourceBundle;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,12 +70,41 @@ public class CustomerResourceTest {
     public void postFailNoFirstName() {
         Customer customer = createCustomer();
         customer.setFirstName(null);
-        given()
+        ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
                 .body(customer)
                 .post()
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract().as(ErrorResponse.class);
+        assertThat(errorResponse.getErrorId()).isNull();
+        assertThat(errorResponse.getErrors())
+                .isNotNull()
+                .hasSize(1)
+                .contains(new ErrorResponse.ErrorMessage("post.customer.firstName", getErrorMessage("Customer.firstName.required")));
+    }
+
+    @Test
+    public void postFailNoFirstNameNoLastNameAndBadEmail() {
+        Customer customer = new Customer();
+        customer.setEmail("NotGood");
+        ErrorResponse errorResponse = given()
+                .contentType(ContentType.JSON)
+                .body(customer)
+                .post()
+                .then()
+                .statusCode(400)
+                .extract()
+                .as(ErrorResponse.class);
+        assertThat(errorResponse.getErrorId()).isNull();
+        assertThat(errorResponse.getErrors())
+                .isNotNull()
+                .hasSize(3)
+                .contains(
+                        new ErrorResponse.ErrorMessage("post.customer.firstName", getErrorMessage("Customer.firstName.required")),
+                        new ErrorResponse.ErrorMessage("post.customer.lastName", getErrorMessage("Customer.lastName.required")),
+                        new ErrorResponse.ErrorMessage("post.customer.email", getErrorMessage("Customer.email.invalid"))
+                );
     }
 
     @Test
@@ -105,12 +137,18 @@ public class CustomerResourceTest {
                 .statusCode(201)
                 .extract().as(Customer.class);
         saved.setLastName(null);
-        given()
+        ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
                 .body(saved)
                 .put("/{customerId}", saved.getCustomerId())
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .extract().as(ErrorResponse.class);
+        assertThat(errorResponse.getErrorId()).isNull();
+        assertThat(errorResponse.getErrors())
+                .isNotNull()
+                .hasSize(1)
+                .contains(new ErrorResponse.ErrorMessage("put.customer.lastName", getErrorMessage("Customer.lastName.required")));
     }
 
     private Customer createCustomer() {
@@ -122,4 +160,9 @@ public class CustomerResourceTest {
         customer.setPhone(RandomStringUtils.randomNumeric(10));
         return customer;
     }
+
+    private String getErrorMessage(String key) {
+        return ResourceBundle.getBundle("ValidationMessages").getString(key);
+    }
+
 }
