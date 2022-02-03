@@ -6,7 +6,7 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
-class ExceptionMappers {
+public class ExceptionMappers {
 
     @ServerExceptionMapper
     public RestResponse<String> mapException(NotFoundException x) {

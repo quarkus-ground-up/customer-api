@@ -17,21 +17,21 @@ public class CustomerEntity {
     private Integer customerId;
 
     @Column(name = "first_name")
-    @NotEmpty
+    @NotEmpty(message = "{Customer.firstName.required}")
     private String firstName;
 
     @Column(name = "middle_name")
     private String middleName;
 
     @Column(name = "last_name")
-    @NotEmpty
+    @NotEmpty(message = "{Customer.lastName.required}")
     private String lastName;
 
     @Column(name = "suffix")
     private String suffix;
 
     @Column(name = "email")
-    @Email
+    @Email(message = "{Customer.email.invalid}")
     private String email;
 
     @Column(name = "phone")
